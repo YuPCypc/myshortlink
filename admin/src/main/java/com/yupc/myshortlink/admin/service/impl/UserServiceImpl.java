@@ -10,6 +10,7 @@ import com.yupc.myshortlink.admin.common.enums.UserErrorCodeEnum;
 import com.yupc.myshortlink.admin.dao.entity.UserDO;
 import com.yupc.myshortlink.admin.dao.mapper.UserMapper;
 import com.yupc.myshortlink.admin.dto.req.UserRegisterReqDTO;
+import com.yupc.myshortlink.admin.dto.req.UserUpdateReqDTO;
 import com.yupc.myshortlink.admin.dto.resp.UserRespDTO;
 import com.yupc.myshortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +66,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         } finally {
             lock.unlock();
         }
-
     }
+
+    @Override
+    public void update(UserUpdateReqDTO requestParam) {
+        // TODO 验证用户是否为登陆用户
+        LambdaQueryWrapper<UserDO> updateWrapper = Wrappers.lambdaQuery(UserDO.class)
+                .eq(UserDO::getUsername, requestParam.getUsername());
+        baseMapper.update(BeanUtil.toBean(requestParam,UserDO.class),updateWrapper);
+    }
+
 
 }
