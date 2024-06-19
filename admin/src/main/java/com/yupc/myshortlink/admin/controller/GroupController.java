@@ -4,6 +4,7 @@ import com.yupc.myshortlink.admin.common.convention.result.Result;
 import com.yupc.myshortlink.admin.common.convention.result.Results;
 import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupDeleteReqDTO;
 import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupSaveReqDTO;
+import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.yupc.myshortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 import com.yupc.myshortlink.admin.service.GroupService;
@@ -52,6 +53,16 @@ public class GroupController {
     @DeleteMapping("/api/myshortlink/v1/group")
     public Result<Void> deleteGroup(@RequestBody ShortLinkGroupDeleteReqDTO requestParam) {
         groupService.deleteGroup(requestParam);
+        return Results.success();
+    }
+
+    /**
+     * 更改短链接分组排序
+     */
+
+    @PostMapping("/api/myshortlink/v1/group/sort")
+    public Result<Void> sortGroup(@RequestBody List<ShortLinkGroupSortReqDTO> requestParam){
+        groupService.sortGroup(requestParam);
         return Results.success();
     }
 }
