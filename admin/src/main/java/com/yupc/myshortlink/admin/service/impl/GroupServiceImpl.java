@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupc.myshortlink.admin.common.biz.user.UserContext;
 import com.yupc.myshortlink.admin.dao.entity.GroupDO;
 import com.yupc.myshortlink.admin.dao.mapper.GroupMapper;
+import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupDeleteReqDTO;
 import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.yupc.myshortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 import com.yupc.myshortlink.admin.service.GroupService;
@@ -56,6 +57,17 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .eq(GroupDO::getDelFlag, 0);
         GroupDO groupDO = new GroupDO();
         groupDO.setName(requestParam.getName());
+        baseMapper.update(groupDO,updateWrapper);
+    }
+
+    @Override
+    public void deleteGroup(ShortLinkGroupDeleteReqDTO requestParam) {
+        LambdaQueryWrapper<GroupDO> updateWrapper = Wrappers.lambdaQuery(GroupDO.class)
+                .eq(GroupDO::getUsername, UserContext.getUsername())
+                .eq(GroupDO::getGid, requestParam.getGid())
+                .eq(GroupDO::getDelFlag, 0);
+        GroupDO groupDO = new GroupDO();
+        groupDO.setDelFlag(1);
         baseMapper.update(groupDO,updateWrapper);
     }
 

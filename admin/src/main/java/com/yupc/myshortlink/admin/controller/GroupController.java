@@ -2,6 +2,7 @@ package com.yupc.myshortlink.admin.controller;
 
 import com.yupc.myshortlink.admin.common.convention.result.Result;
 import com.yupc.myshortlink.admin.common.convention.result.Results;
+import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupDeleteReqDTO;
 import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupSaveReqDTO;
 import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.yupc.myshortlink.admin.dto.resp.ShortLinkGroupRespDTO;
@@ -19,20 +20,38 @@ import java.util.List;
 public class GroupController {
     private final GroupService groupService;
 
+    /**
+     * 新建短链接分组
+     */
     @PostMapping("/api/myshortlink/v1/group")
     public Result<Void> getUserByUsername(@RequestBody ShortLinkGroupSaveReqDTO requestParam) {
         groupService.saveGroup(requestParam.getName());
         return Results.success();
     }
 
+    /**
+     * 获取短链接分组列表
+     */
     @GetMapping("/api/myshortlink/v1/group")
     public Result<List<ShortLinkGroupRespDTO>> listGroup() {
         return Results.success(groupService.listGroup());
     }
 
+    /**
+     * 更新短链接分组
+     */
     @PutMapping("/api/myshortlink/v1/group")
     public Result<Void> updateGroup(@RequestBody ShortLinkGroupUpdateReqDTO requestParam) {
         groupService.updateGroup(requestParam);
+        return Results.success();
+    }
+
+    /**
+     * 删除短链接分组
+     */
+    @DeleteMapping("/api/myshortlink/v1/group")
+    public Result<Void> deleteGroup(@RequestBody ShortLinkGroupDeleteReqDTO requestParam) {
+        groupService.deleteGroup(requestParam);
         return Results.success();
     }
 }

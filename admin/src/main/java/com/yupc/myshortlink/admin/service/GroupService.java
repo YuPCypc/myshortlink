@@ -2,6 +2,7 @@ package com.yupc.myshortlink.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yupc.myshortlink.admin.dao.entity.GroupDO;
+import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupDeleteReqDTO;
 import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.yupc.myshortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 
@@ -30,4 +31,9 @@ public interface GroupService extends IService<GroupDO> {
      */
     void updateGroup(ShortLinkGroupUpdateReqDTO requestParam);
 
+    /**
+     * 删除短链接分组
+     * @param requestParam 短链接删除分组请求参数
+     */
+    void deleteGroup(ShortLinkGroupDeleteReqDTO requestParam);
 }
