@@ -11,6 +11,11 @@ public class ShortLinkCreateReqDTO {
      */
     private String domain;
 
+    /**
+     * gid
+     */
+    private String gid;
+
 
     /**
      * 原始链接

@@ -3,11 +3,17 @@ package com.yupc.myshortlink.project.dao.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.yupc.myshortlink.project.common.database.BaseDO;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
 @Data
+@AllArgsConstructor
+@Builder
+@NoArgsConstructor
 @TableName(value = "t_link")
 public class ShortLinkDO extends BaseDO {
 
