@@ -68,7 +68,7 @@ public class UserTransmitFilter implements Filter {
 
         try {
             filterChain.doFilter(servletRequest, servletResponse);
-        } finally {
+        }finally{
             UserContext.removeUser();
         }
     }
