@@ -7,10 +7,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yupc.myshortlink.admin.common.convention.result.Result;
 import com.yupc.myshortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.yupc.myshortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
+import com.yupc.myshortlink.admin.remote.dto.resp.ShortLinkCountQueryRespDTO;
 import com.yupc.myshortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.yupc.myshortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,6 +40,17 @@ public interface ShortLinkRemoteService {
         String response = HttpUtil.get("http://127.0.0.1:8001/api/myshortlink/v1/page", requestMap);
         return JSON.parseObject(response, new TypeReference<Result<IPage<ShortLinkPageRespDTO>>>() {
 
+        });
+    }
+
+    /**
+     * 查询短链接分组内的数量
+     */
+    default Result<List<ShortLinkCountQueryRespDTO>> countShortLink(@RequestParam("") List<String> requestParam) {
+        Map<String, Object> requestMap = new HashMap<>();
+        requestMap.put("requestParam", requestParam);
+        String response = HttpUtil.get("http://127.0.0.1:8001/api/myshortlink/v1/count", requestMap);
+        return JSON.parseObject(response, new TypeReference<Result<List<ShortLinkCountQueryRespDTO>>>() {
         });
     }
 }
