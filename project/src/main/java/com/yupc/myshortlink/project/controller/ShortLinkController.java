@@ -5,6 +5,7 @@ import com.yupc.myshortlink.project.common.convention.result.Result;
 import com.yupc.myshortlink.project.common.convention.result.Results;
 import com.yupc.myshortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkPageReqDTO;
+import com.yupc.myshortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.yupc.myshortlink.project.dto.resp.ShortLinkCountQueryRespDTO;
 import com.yupc.myshortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.yupc.myshortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -28,6 +29,15 @@ public class ShortLinkController {
     }
 
     /**
+     * 更新短链接
+     */
+    @PutMapping("/api/myshortlink/v1/create")
+    public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam){
+        shortLinkService.updateShortLink(requestParam);
+        return Results.success();
+    }
+
+    /**
      * 短链接分页返回
      */
     @GetMapping("/api/myshortlink/v1/page")
@@ -41,6 +51,8 @@ public class ShortLinkController {
     @GetMapping("/api/myshortlink/v1/count")
     public Result<List<ShortLinkCountQueryRespDTO>> listGroupShortLinkCount(@RequestParam("requestParam") List<String> requestParam){
         return Results.success(shortLinkService.listGroupShortLinkCount(requestParam));
-
     }
+
+
+
 }
