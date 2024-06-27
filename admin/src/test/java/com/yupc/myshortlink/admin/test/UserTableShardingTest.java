@@ -33,9 +33,15 @@ public class UserTableShardingTest {
             "  PRIMARY KEY (`id`),\n" +
             "  UNIQUE KEY `idx_unique_username_gid` (`gid`,`username`) USING BTREE\n" +
             ") ENGINE=InnoDB AUTO_INCREMENT=1803311249193947139 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;";
+
+    public static final String SQL3 = "CREATE TABLE `link`.`t_link_goto_%d` (\n" +
+            "  `id` BIGINT(20) NOT NULL,\n" +
+            "  `gid` VARCHAR(32) NULL,\n" +
+            "  `full_short_url` VARCHAR(128) NULL,\n" +
+            "  PRIMARY KEY (`id`));";
     public static void main(String[] args) {
         for (int i = 0; i < 16; i++) {
-            System.out.println(String.format(SQL2,i));
+            System.out.println(String.format(SQL3,i));
         }
     }
 }
