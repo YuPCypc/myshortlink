@@ -38,6 +38,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -58,7 +59,10 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
         String generateSuffix = generateSuffix(requestParam);
-        String fullShortLink = StrBuilder.create(requestParam.getDomain()).append("/").append(generateSuffix).toString();
+        String fullShortLink = StrBuilder.create(requestParam.getDomain())
+                .append("/")
+                .append(generateSuffix)
+                .toString();
         ShortLinkDO shortLinkDO = ShortLinkDO.builder()
                 .domain(requestParam.getDomain())
                 .originUrl(requestParam.getOriginUrl())
@@ -87,7 +91,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 throw new ServiceException("短链接生成重复");
             }
         }
-        stringRedisTemplate.opsForValue().set(fullShortLink,requestParam.getOriginUrl(), LinkUtil.getLinkCacheValidDate(requestParam.getValidTime()),TimeUnit.MILLISECONDS);
+        stringRedisTemplate.opsForValue()
+                .set(String.format(GOTO_SHORT_LINK_KEY,fullShortLink),requestParam.getOriginUrl(), LinkUtil.getLinkCacheValidDate(requestParam.getValidTime()),TimeUnit.MILLISECONDS);
         shortUrlCreateCachePenetrationBloomFilter.add(fullShortLink);
         return ShortLinkCreateRespDTO.builder()
                 .fullShortUrl("http://" + shortLinkDO.getFullShortUrl())
@@ -211,6 +216,10 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkDO::getFullShortUrl, fullShortUrl);
             ShortLinkDO hasShortLinkDO = baseMapper.selectOne(queryWrapper);
             if (hasShortLinkDO != null) {
+                if (hasShortLinkDO.getValidTime()!=null&&hasShortLinkDO.getValidTime().before(new Date())){
+                    stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl),"-",30, TimeUnit.MINUTES);
+                    return;
+                }
                 stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), hasShortLinkDO.getOriginUrl());
                 ((HttpServletResponse) serverHttpResponse).sendRedirect(hasShortLinkDO.getOriginUrl());
             }
