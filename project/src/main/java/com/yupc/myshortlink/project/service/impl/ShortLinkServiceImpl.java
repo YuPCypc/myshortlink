@@ -24,6 +24,7 @@ import com.yupc.myshortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.yupc.myshortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.yupc.myshortlink.project.service.ShortLinkService;
 import com.yupc.myshortlink.project.toolkit.HashUtil;
+import com.yupc.myshortlink.project.toolkit.LinkUtil;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -86,7 +87,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 throw new ServiceException("短链接生成重复");
             }
         }
-        ;
+        stringRedisTemplate.opsForValue().set(fullShortLink,requestParam.getOriginUrl(), LinkUtil.getLinkCacheValidDate(requestParam.getValidTime()),TimeUnit.MILLISECONDS);
         shortUrlCreateCachePenetrationBloomFilter.add(fullShortLink);
         return ShortLinkCreateRespDTO.builder()
                 .fullShortUrl("http://" + shortLinkDO.getFullShortUrl())
