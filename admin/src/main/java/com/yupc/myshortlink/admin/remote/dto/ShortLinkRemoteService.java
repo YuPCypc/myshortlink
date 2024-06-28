@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yupc.myshortlink.admin.common.convention.result.Result;
+import com.yupc.myshortlink.admin.dto.req.RecycleBinRecoverReqDTO;
 import com.yupc.myshortlink.admin.dto.req.RecycleBinSaveReqDTO;
 import com.yupc.myshortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.yupc.myshortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
@@ -86,6 +87,10 @@ public interface ShortLinkRemoteService {
         return JSON.parseObject(response, new TypeReference<Result<IPage<ShortLinkPageRespDTO>>>() {
 
         });
+    }
+
+    default void recoverRecycleBin(RecycleBinRecoverReqDTO requestParam){
+       HttpUtil.post("http://127.0.0.1:8001/api/myshortlink/v1/recycle-bin/recover",JSON.toJSONString(requestParam));
     }
 }
 
