@@ -31,12 +31,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
 import java.util.List;
@@ -56,6 +60,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final StringRedisTemplate stringRedisTemplate;
     private final RedissonClient redissonClient;
 
+    private final RestTemplate restTemplate = new RestTemplate();
+
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
         String generateSuffix = generateSuffix(requestParam);
@@ -73,6 +79,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .describe(requestParam.getDescribe())
                 .shortUrl(generateSuffix)
                 .enableStatus(0)
+                .favicon(getFaviconByURL(requestParam.getOriginUrl()))
                 .fullShortUrl(fullShortLink)
                 .build();
         ShortLinkGoToDO shortLinkGoToDO = ShortLinkGoToDO.builder()
@@ -219,16 +226,14 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkDO::getEnableStatus, 0)
                     .eq(ShortLinkDO::getFullShortUrl, fullShortUrl);
             ShortLinkDO hasShortLinkDO = baseMapper.selectOne(queryWrapper);
-            if (hasShortLinkDO != null) {
-                if (hasShortLinkDO.getValidTime() != null && hasShortLinkDO.getValidTime().before(new Date())) {
-                    stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
-                    ((HttpServletResponse) serverHttpResponse).sendRedirect("/page/notfound");
+            if (hasShortLinkDO == null || hasShortLinkDO.getValidTime().before(new Date())) {
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
+                ((HttpServletResponse) serverHttpResponse).sendRedirect("/page/notfound");
+                return;
 
-                    return;
-                }
-                stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), hasShortLinkDO.getOriginUrl());
-                ((HttpServletResponse) serverHttpResponse).sendRedirect(hasShortLinkDO.getOriginUrl());
             }
+            stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), hasShortLinkDO.getOriginUrl());
+            ((HttpServletResponse) serverHttpResponse).sendRedirect(hasShortLinkDO.getOriginUrl());
         } finally {
             lock.unlock();
         }
@@ -249,6 +254,24 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             }
             customGenerateCount--;
         }
+    }
+
+    private String getFaviconByURL(String url){
+        // Fetch the HTML content from the website
+        String htmlContent = restTemplate.getForObject(url, String.class);
+
+        // Parse the HTML content using Jsoup
+        Document doc = Jsoup.parse(htmlContent,url);
+
+        // Look for the favicon link elements
+        Element iconElement = doc.selectFirst("link[rel~=(?i)^(shortcut icon|icon)]");
+
+        // If found, return the absolute URL of the favicon
+        if (iconElement != null) {
+            String faviconUrl = iconElement.absUrl("href");
+            return faviconUrl;
+        }
+        return null;
     }
 
 }
