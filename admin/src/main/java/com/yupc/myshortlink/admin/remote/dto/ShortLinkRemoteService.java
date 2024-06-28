@@ -8,6 +8,7 @@ import com.yupc.myshortlink.admin.common.convention.result.Result;
 import com.yupc.myshortlink.admin.dto.req.RecycleBinSaveReqDTO;
 import com.yupc.myshortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.yupc.myshortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
+import com.yupc.myshortlink.admin.remote.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.yupc.myshortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
 import com.yupc.myshortlink.admin.remote.dto.resp.ShortLinkCountQueryRespDTO;
 import com.yupc.myshortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
@@ -76,9 +77,9 @@ public interface ShortLinkRemoteService {
            HttpUtil.post("http://127.0.0.1:8001/api/myshortlink/v1/recycle-bin",JSON.toJSONString(requestParam));
     }
 
-    default Result<IPage<ShortLinkPageRespDTO>> RecycleBinpageShortLink(ShortLinkPageReqDTO requestParam){
+    default Result<IPage<ShortLinkPageRespDTO>> RecycleBinpageShortLink(ShortLinkRecycleBinPageReqDTO requestParam){
         Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("gid", requestParam.getGid());
+        requestMap.put("gidList",requestParam.getGidList());
         requestMap.put("current", requestParam.getCurrent());
         requestMap.put("size", requestParam.getSize());
         String response = HttpUtil.get("http://127.0.0.1:8001/api/myshortlink/v1/recycle-bin/page", requestMap);
