@@ -9,7 +9,10 @@ import com.yupc.myshortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.yupc.myshortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
 import com.yupc.myshortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.yupc.myshortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ShortLinkController {
