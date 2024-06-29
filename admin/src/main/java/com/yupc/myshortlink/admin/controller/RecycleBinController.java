@@ -4,13 +4,17 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yupc.myshortlink.admin.common.convention.result.Result;
 import com.yupc.myshortlink.admin.common.convention.result.Results;
 import com.yupc.myshortlink.admin.dto.req.RecycleBinRecoverReqDTO;
+import com.yupc.myshortlink.admin.dto.req.RecycleBinRemoveReqDTO;
 import com.yupc.myshortlink.admin.dto.req.RecycleBinSaveReqDTO;
 import com.yupc.myshortlink.admin.remote.dto.ShortLinkRemoteService;
 import com.yupc.myshortlink.admin.remote.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.yupc.myshortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
 import com.yupc.myshortlink.admin.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,6 +47,15 @@ public class RecycleBinController {
     @PostMapping("/api/myshortlink/admin/v1/recycle-bin/recover")
     public Result<Void> recoverRecycleBin(@RequestBody RecycleBinRecoverReqDTO requestParam){
         shortLinkRemoteService.recoverRecycleBin(requestParam);
+        return Results.success();
+    }
+
+    /**
+     * 回收站删除
+     */
+    @PostMapping("/api/myshortlink/amdin/v1/recycle-bin/remove")
+    public Result<Void> removeRecycleBin(@RequestBody RecycleBinRemoveReqDTO requestParam){
+        shortLinkRemoteService.removeRecycleBin(requestParam);
         return Results.success();
     }
 }

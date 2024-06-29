@@ -2,6 +2,7 @@ package com.yupc.myshortlink.project.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yupc.myshortlink.project.dto.req.RecycleBinRecoverReqDTO;
+import com.yupc.myshortlink.project.dto.req.RecycleBinRemoveReqDTO;
 import com.yupc.myshortlink.project.dto.req.RecycleBinSaveReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.yupc.myshortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -21,4 +22,6 @@ public interface RecycleBinService {
     IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam);
 
     void recoverRecycleBin(RecycleBinRecoverReqDTO requestParam);
+
+    void removeRecycleBin(RecycleBinRemoveReqDTO requestParam);
 }
