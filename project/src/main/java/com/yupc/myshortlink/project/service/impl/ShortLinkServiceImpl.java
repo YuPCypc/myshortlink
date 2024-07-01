@@ -19,14 +19,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupc.myshortlink.project.common.convention.exception.ClientException;
 import com.yupc.myshortlink.project.common.convention.exception.ServiceException;
 import com.yupc.myshortlink.project.common.enums.VailDateTimeTypeEnum;
-import com.yupc.myshortlink.project.dao.entity.LinkAccessStatsDO;
-import com.yupc.myshortlink.project.dao.entity.LinkLocaleStatsDO;
-import com.yupc.myshortlink.project.dao.entity.ShortLinkDO;
-import com.yupc.myshortlink.project.dao.entity.ShortLinkGoToDO;
-import com.yupc.myshortlink.project.dao.mapper.LinkAccessStatsMapper;
-import com.yupc.myshortlink.project.dao.mapper.LinkLocaleStatsMapper;
-import com.yupc.myshortlink.project.dao.mapper.ShortLinkGoToMapper;
-import com.yupc.myshortlink.project.dao.mapper.ShortLinkMapper;
+import com.yupc.myshortlink.project.dao.entity.*;
+import com.yupc.myshortlink.project.dao.mapper.*;
 import com.yupc.myshortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkUpdateReqDTO;
@@ -72,6 +66,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final ShortLinkGoToMapper shortLinkGoToMapper;
     private final LinkAccessStatsMapper linkAccessStatsMapper;
     private final LinkLocaleStatsMapper linkLocaleStatsMapper;
+    private final LinkOSStatsMapper linkOSStatsMapper;
     private final StringRedisTemplate stringRedisTemplate;
     private final RedissonClient redissonClient;
 
@@ -295,6 +290,25 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         return null;
     }
 
+    public static String getOS(HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        if (userAgent.toLowerCase().contains("windows")) {
+            return "Windows";
+        } else if (userAgent.toLowerCase().contains("mac")) {
+            return "Mac OS";
+        } else if (userAgent.toLowerCase().contains("linux")) {
+            return "Linux";
+        } else if (userAgent.toLowerCase().contains("unix")) {
+            return "Unix";
+        } else if (userAgent.toLowerCase().contains("android")) {
+            return "Android";
+        } else if (userAgent.toLowerCase().contains("iphone")) {
+            return "iOS";
+        } else {
+            return "Unknown";
+        }
+    }
+
     private void shortLinkStats(String fullShortUrl, ServletRequest request, ServletResponse response) {
         Cookie[] cookies = ((HttpServletRequest) request).getCookies();
         AtomicBoolean uvBoolean = new AtomicBoolean();
@@ -363,6 +377,14 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .date(date)
                         .build();
                 linkLocaleStatsMapper.ShortLinkLocaleStats(linkLocaleStatsDO);
+                LinkOSStatsDO osStatsDO = LinkOSStatsDO.builder()
+                        .gid(shortLinkDO.getGid())
+                        .os(getOS((HttpServletRequest)request))
+                        .cnt(1)
+                        .date(date)
+                        .fullShortUrl(fullShortUrl)
+                        .build();
+                linkOSStatsMapper.ShortLinkOSStats(osStatsDO);
             }
 
             linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
