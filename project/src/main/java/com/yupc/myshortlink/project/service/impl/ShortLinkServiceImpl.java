@@ -53,6 +53,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.yupc.myshortlink.project.common.constant.RedisKeyConst.*;
 import static com.yupc.myshortlink.project.common.constant.ShortLinkConstant.AMAP_REMOTE_URL;
@@ -68,6 +69,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkLocaleStatsMapper linkLocaleStatsMapper;
     private final LinkOSStatsMapper linkOSStatsMapper;
     private final LinkBrowserStatsMapper linkBrowserStatsMapper;
+    private final LinkAccessLogsMapper linkAccessLogsMapper;
     private final StringRedisTemplate stringRedisTemplate;
     private final RedissonClient redissonClient;
 
@@ -332,14 +334,16 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private void shortLinkStats(String fullShortUrl, ServletRequest request, ServletResponse response) {
         Cookie[] cookies = ((HttpServletRequest) request).getCookies();
         AtomicBoolean uvBoolean = new AtomicBoolean();
+        AtomicReference<String> uv = new AtomicReference<>();
         Runnable addResponseCookie = () -> {
-            String uv = UUID.fastUUID().toString();
-            Cookie cookie = new Cookie("uv", uv);
+            String actualUv = UUID.fastUUID().toString();
+            uv.set(actualUv);
+            Cookie cookie = new Cookie("uv", actualUv);
             cookie.setMaxAge(60 * 60 * 24 * 30);
             cookie.setPath(StrUtil.sub(fullShortUrl, fullShortUrl.indexOf("/"), fullShortUrl.length()));
             ((HttpServletResponse) response).addCookie(cookie);
             uvBoolean.set(Boolean.TRUE);
-            stringRedisTemplate.opsForSet().add("short-link:stats:uv:" + fullShortUrl, uv);
+            stringRedisTemplate.opsForSet().add("short-link:stats:uv:" + fullShortUrl, actualUv);
         };
         try {
             if (ArrayUtil.isNotEmpty(cookies)) {
@@ -349,6 +353,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .map(Cookie::getValue)
                         .ifPresentOrElse(
                                 each -> {
+                                    uv.set(each);
                                     Long uvAdded = stringRedisTemplate.opsForSet().add("short-link:stats:uv:" + fullShortUrl, each);
                                     uvBoolean.set(uvAdded != null && uvAdded > 0L);
                                 }, addResponseCookie
@@ -362,6 +367,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
                     .eq(ShortLinkDO::getFullShortUrl, fullShortUrl);
             ShortLinkDO shortLinkDO = baseMapper.selectOne(queryWrapper);
+            String gid = shortLinkDO.getGid();
             Date date = new Date();
             int hour = DateUtil.hour(date, true);
             Week week = DateUtil.dayOfWeekEnum(date);
@@ -373,7 +379,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .weekday(value)
                     .hour(hour)
                     .fullShortUrl(fullShortUrl)
-                    .gid(shortLinkDO.getGid())
+                    .gid(gid)
                     .date(date)
                     .build();
             Map<String, Object> localeParamMap = new HashMap<>();
@@ -388,7 +394,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 boolean unKnowFlag = StrUtil.isBlank(province);
                 linkLocaleStatsDO = LinkLocaleStatsDO.builder()
                         .fullShortUrl(fullShortUrl)
-                        .gid(shortLinkDO.getGid())
+                        .gid(gid)
                         .province(unKnowFlag ? "未知" : province)
                         .city(unKnowFlag ? "未知" : jsonObject.getString("city"))
                         .adcode(unKnowFlag ? "未知" : jsonObject.getString("adcode"))
@@ -397,23 +403,35 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .date(date)
                         .build();
                 linkLocaleStatsMapper.ShortLinkLocaleStats(linkLocaleStatsDO);
-                LinkOSStatsDO osStatsDO = LinkOSStatsDO.builder()
-                        .gid(shortLinkDO.getGid())
-                        .os(getOS((HttpServletRequest)request))
-                        .cnt(1)
-                        .date(date)
-                        .fullShortUrl(fullShortUrl)
-                        .build();
-                linkOSStatsMapper.ShortLinkOSStats(osStatsDO);
-                LinkBrowserStatsDO linkBrowserStatsDO = LinkBrowserStatsDO.builder()
-                        .gid(shortLinkDO.getGid())
-                        .browser(getBrowser((HttpServletRequest)request))
-                        .cnt(1)
-                        .date(date)
-                        .fullShortUrl(fullShortUrl)
-                        .build();
-                linkBrowserStatsMapper.ShortLinkBrowserStats(linkBrowserStatsDO);
             }
+            String os = getOS((HttpServletRequest) request);
+            LinkOSStatsDO osStatsDO = LinkOSStatsDO.builder()
+                    .gid(gid)
+                    .os(os)
+                    .cnt(1)
+                    .date(date)
+                    .fullShortUrl(fullShortUrl)
+                    .build();
+            linkOSStatsMapper.ShortLinkOSStats(osStatsDO);
+            String browser = getBrowser((HttpServletRequest) request);
+            LinkBrowserStatsDO linkBrowserStatsDO = LinkBrowserStatsDO.builder()
+                    .gid(gid)
+                    .browser(browser)
+                    .cnt(1)
+                    .date(date)
+                    .fullShortUrl(fullShortUrl)
+                    .build();
+            linkBrowserStatsMapper.ShortLinkBrowserStats(linkBrowserStatsDO);
+
+            LinkAccessLogsDO linkAccessLogsDO = LinkAccessLogsDO.builder()
+                    .ip(remoteAddr)
+                    .browser(browser)
+                    .fullShortUrl(fullShortUrl)
+                    .gid(gid)
+                    .os(os)
+                    .user(uv.get())
+                    .build();
+            linkAccessLogsMapper.insert(linkAccessLogsDO);
 
             linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
         } catch (Exception ex) {
