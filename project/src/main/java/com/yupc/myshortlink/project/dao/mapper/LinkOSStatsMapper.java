@@ -2,8 +2,13 @@ package com.yupc.myshortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.yupc.myshortlink.project.dao.entity.LinkOSStatsDO;
+import com.yupc.myshortlink.project.dto.req.ShortLinkStatsReqDTO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * 短链接OS访问监控持久层
@@ -15,4 +20,20 @@ public interface LinkOSStatsMapper extends BaseMapper<LinkOSStatsDO> {
             "#{linkOSStats.os},NOW(), NOW(), 0) " +
             "ON DUPLICATE KEY UPDATE cnt = cnt +  #{linkOSStats.cnt};")
     void ShortLinkOSStats(@Param("linkOSStats") LinkOSStatsDO linkOSStatsDO);
+
+    /**
+     * 根据短链接获取指定日期内操作系统监控数据
+     */
+    @Select("SELECT " +
+            "    os, " +
+            "    SUM(cnt) AS count " +
+            "FROM " +
+            "    t_link_os_stats " +
+            "WHERE " +
+            "    full_short_url = #{param.fullShortUrl} " +
+            "    AND gid = #{param.gid} " +
+            "    AND date BETWEEN #{param.startDate} and #{param.endDate} " +
+            "GROUP BY " +
+            "    full_short_url, gid, os;")
+    List<HashMap<String, Object>> listOsStatsByShortLink(@Param("param") ShortLinkStatsReqDTO requestParam);
 }
