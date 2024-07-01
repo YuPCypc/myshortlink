@@ -71,6 +71,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkBrowserStatsMapper linkBrowserStatsMapper;
     private final LinkAccessLogsMapper linkAccessLogsMapper;
     private final LinkDeviceStatsMapper linkDeviceStatsMapper;
+    private final LinkNetworkStatsMapper linkNetworkStatsMapper;
     private final StringRedisTemplate stringRedisTemplate;
     private final RedissonClient redissonClient;
 
@@ -294,58 +295,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         return null;
     }
 
-    public static String getOS(HttpServletRequest request) {
-        String userAgent = request.getHeader("User-Agent");
-        if (userAgent.toLowerCase().contains("windows")) {
-            return "Windows";
-        } else if (userAgent.toLowerCase().contains("mac")) {
-            return "Mac OS";
-        } else if (userAgent.toLowerCase().contains("linux")) {
-            return "Linux";
-        } else if (userAgent.toLowerCase().contains("unix")) {
-            return "Unix";
-        } else if (userAgent.toLowerCase().contains("android")) {
-            return "Android";
-        } else if (userAgent.toLowerCase().contains("iphone")) {
-            return "iOS";
-        } else {
-            return "Unknown";
-        }
-    }
-
-    public static String getBrowser(HttpServletRequest request) {
-        String userAgent = request.getHeader("User-Agent");
-        if (userAgent.toLowerCase().contains("edg")) {
-            return "Microsoft Edge";
-        } else if (userAgent.toLowerCase().contains("chrome")) {
-            return "Google Chrome";
-        } else if (userAgent.toLowerCase().contains("firefox")) {
-            return "Mozilla Firefox";
-        } else if (userAgent.toLowerCase().contains("safari")) {
-            return "Apple Safari";
-        } else if (userAgent.toLowerCase().contains("opera")) {
-            return "Opera";
-        } else if (userAgent.toLowerCase().contains("msie") || userAgent.toLowerCase().contains("trident")) {
-            return "Internet Explorer";
-        } else {
-            return "Unknown";
-        }
-    }
-
-    /**
-     * 获取用户访问设备
-     *
-     * @param request 请求
-     * @return 访问设备
-     */
-    public static String getDevice(HttpServletRequest request) {
-        String userAgent = request.getHeader("User-Agent");
-        if (userAgent.toLowerCase().contains("mobile")) {
-            return "Mobile";
-        }
-        return "PC";
-    }
-
     private void shortLinkStats(String fullShortUrl, ServletRequest request, ServletResponse response) {
         Cookie[] cookies = ((HttpServletRequest) request).getCookies();
         AtomicBoolean uvBoolean = new AtomicBoolean();
@@ -419,7 +368,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .build();
                 linkLocaleStatsMapper.ShortLinkLocaleStats(linkLocaleStatsDO);
             }
-            String os = getOS((HttpServletRequest) request);
+            String os = LinkUtil.getOS((HttpServletRequest) request);
             LinkOSStatsDO osStatsDO = LinkOSStatsDO.builder()
                     .gid(gid)
                     .os(os)
@@ -428,7 +377,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .fullShortUrl(fullShortUrl)
                     .build();
             linkOSStatsMapper.ShortLinkOSStats(osStatsDO);
-            String browser = getBrowser((HttpServletRequest) request);
+            String browser = LinkUtil.getBrowser((HttpServletRequest) request);
             LinkBrowserStatsDO linkBrowserStatsDO = LinkBrowserStatsDO.builder()
                     .gid(gid)
                     .browser(browser)
@@ -449,13 +398,23 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             linkAccessLogsMapper.insert(linkAccessLogsDO);
 
             LinkDeviceStatsDO linkDeviceStatsDO = LinkDeviceStatsDO.builder()
-                    .device(getDevice((HttpServletRequest) request))
+                    .device(LinkUtil.getDevice((HttpServletRequest) request))
                     .cnt(1)
                     .gid(gid)
                     .fullShortUrl(fullShortUrl)
                     .date(date)
                     .build();
             linkDeviceStatsMapper.shortLinkDeviceState(linkDeviceStatsDO);
+
+            LinkNetworkStatsDO linkNetworkStatsDO = LinkNetworkStatsDO.builder()
+                    .network(LinkUtil.getNetwork(((HttpServletRequest) request)))
+                    .cnt(1)
+                    .gid(gid)
+                    .fullShortUrl(fullShortUrl)
+                    .date(new Date())
+                    .build();
+
+            linkNetworkStatsMapper.shortLinkNetworkState(linkNetworkStatsDO);
 
             linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
         } catch (Exception ex) {
