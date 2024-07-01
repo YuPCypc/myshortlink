@@ -70,6 +70,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkOSStatsMapper linkOSStatsMapper;
     private final LinkBrowserStatsMapper linkBrowserStatsMapper;
     private final LinkAccessLogsMapper linkAccessLogsMapper;
+    private final LinkDeviceStatsMapper linkDeviceStatsMapper;
     private final StringRedisTemplate stringRedisTemplate;
     private final RedissonClient redissonClient;
 
@@ -331,6 +332,20 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
     }
 
+    /**
+     * 获取用户访问设备
+     *
+     * @param request 请求
+     * @return 访问设备
+     */
+    public static String getDevice(HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        if (userAgent.toLowerCase().contains("mobile")) {
+            return "Mobile";
+        }
+        return "PC";
+    }
+
     private void shortLinkStats(String fullShortUrl, ServletRequest request, ServletResponse response) {
         Cookie[] cookies = ((HttpServletRequest) request).getCookies();
         AtomicBoolean uvBoolean = new AtomicBoolean();
@@ -432,6 +447,15 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .user(uv.get())
                     .build();
             linkAccessLogsMapper.insert(linkAccessLogsDO);
+
+            LinkDeviceStatsDO linkDeviceStatsDO = LinkDeviceStatsDO.builder()
+                    .device(getDevice((HttpServletRequest) request))
+                    .cnt(1)
+                    .gid(gid)
+                    .fullShortUrl(fullShortUrl)
+                    .date(date)
+                    .build();
+            linkDeviceStatsMapper.shortLinkDeviceState(linkDeviceStatsDO);
 
             linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
         } catch (Exception ex) {
