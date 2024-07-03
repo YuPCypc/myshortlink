@@ -3,9 +3,11 @@ package com.yupc.myshortlink.project.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yupc.myshortlink.project.dao.entity.ShortLinkDO;
+import com.yupc.myshortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkUpdateReqDTO;
+import com.yupc.myshortlink.project.dto.resp.ShortLinkBatchCreateRespDTO;
 import com.yupc.myshortlink.project.dto.resp.ShortLinkCountQueryRespDTO;
 import com.yupc.myshortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.yupc.myshortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -38,4 +40,5 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
 
     void restoreUrl(String shortUrl, ServletRequest serverHttpRequest, ServletResponse serverHttpResponse);
 
+    ShortLinkBatchCreateRespDTO batchCreateShortLink(ShortLinkBatchCreateReqDTO requestParam);
 }

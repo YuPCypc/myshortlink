@@ -3,9 +3,11 @@ package com.yupc.myshortlink.project.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yupc.myshortlink.project.common.convention.result.Result;
 import com.yupc.myshortlink.project.common.convention.result.Results;
+import com.yupc.myshortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkUpdateReqDTO;
+import com.yupc.myshortlink.project.dto.resp.ShortLinkBatchCreateRespDTO;
 import com.yupc.myshortlink.project.dto.resp.ShortLinkCountQueryRespDTO;
 import com.yupc.myshortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.yupc.myshortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -62,4 +64,14 @@ public class ShortLinkController {
     public void restoreUrl(@PathVariable("short-url")String shortUrl, ServletRequest serverHttpRequest, ServletResponse serverHttpResponse){
         shortLinkService.restoreUrl(shortUrl,serverHttpRequest,serverHttpResponse);
     }
+
+    /**
+     * 批量创建短链接
+     */
+    @PostMapping("/api/myshortlink/v1/create/batch")
+    public Result<ShortLinkBatchCreateRespDTO> batchCreateShortLink(@RequestBody ShortLinkBatchCreateReqDTO requestParam) {
+        return Results.success(shortLinkService.batchCreateShortLink(requestParam));
+    }
+
+
 }

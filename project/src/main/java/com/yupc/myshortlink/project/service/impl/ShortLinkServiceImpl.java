@@ -21,12 +21,11 @@ import com.yupc.myshortlink.project.common.convention.exception.ServiceException
 import com.yupc.myshortlink.project.common.enums.VailDateTimeTypeEnum;
 import com.yupc.myshortlink.project.dao.entity.*;
 import com.yupc.myshortlink.project.dao.mapper.*;
+import com.yupc.myshortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.yupc.myshortlink.project.dto.req.ShortLinkUpdateReqDTO;
-import com.yupc.myshortlink.project.dto.resp.ShortLinkCountQueryRespDTO;
-import com.yupc.myshortlink.project.dto.resp.ShortLinkCreateRespDTO;
-import com.yupc.myshortlink.project.dto.resp.ShortLinkPageRespDTO;
+import com.yupc.myshortlink.project.dto.resp.*;
 import com.yupc.myshortlink.project.service.ShortLinkService;
 import com.yupc.myshortlink.project.toolkit.HashUtil;
 import com.yupc.myshortlink.project.toolkit.LinkUtil;
@@ -78,18 +77,22 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+
     @Value("${short-link.stats.locale.amap-key}")
     String amapKey;
+
+    @Value("${short-link.domain.default}")
+    private String createShortLinkDefaultDomain;
 
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
         String generateSuffix = generateSuffix(requestParam);
-        String fullShortLink = StrBuilder.create(requestParam.getDomain())
+        String fullShortLink = StrBuilder.create(createShortLinkDefaultDomain)
                 .append("/")
                 .append(generateSuffix)
                 .toString();
         ShortLinkDO shortLinkDO = ShortLinkDO.builder()
-                .domain(requestParam.getDomain())
+                .domain(createShortLinkDefaultDomain)
                 .originUrl(requestParam.getOriginUrl())
                 .gid(requestParam.getGid())
                 .createType(requestParam.getCreateType())
@@ -141,7 +144,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     return result;
                 });
     }
-
 
 
     @Override
@@ -201,7 +203,13 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     @Override
     public void restoreUrl(String shortUrl, ServletRequest serverHttpRequest, ServletResponse serverHttpResponse) {
         String serverName = serverHttpRequest.getServerName();
-        String fullShortUrl = serverName + "/" + shortUrl;
+        String serverPort = Optional.of(serverHttpRequest.getServerPort())
+                .filter(each -> !Objects.equals(each, 80))
+                .map(String::valueOf)
+                .map(each -> ":" + each)
+                .orElse("");
+
+        String fullShortUrl = serverName + serverPort + "/" + shortUrl;
         String originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
 
         if (StrUtil.isNotBlank(originalLink)) {
@@ -247,7 +255,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkDO::getEnableStatus, 0)
                     .eq(ShortLinkDO::getFullShortUrl, fullShortUrl);
             ShortLinkDO hasShortLinkDO = baseMapper.selectOne(queryWrapper);
-            if (hasShortLinkDO == null || hasShortLinkDO.getValidTime().before(new Date())) {
+            if (hasShortLinkDO == null || (hasShortLinkDO.getValidTime() != null && hasShortLinkDO.getValidTime().before(new Date()))) {
                 stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
                 ((HttpServletResponse) serverHttpResponse).sendRedirect("/page/notfound");
                 return;
@@ -259,6 +267,33 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         } finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    public ShortLinkBatchCreateRespDTO batchCreateShortLink(ShortLinkBatchCreateReqDTO requestParam) {
+        List<String> originUrls = requestParam.getOriginUrls();
+        List<String> describes = requestParam.getDescribes();
+        List<ShortLinkBaseInfoRespDTO> result = new ArrayList<>();
+        for (int i = 0; i < originUrls.size(); i++) {
+            ShortLinkCreateReqDTO shortLinkCreateReqDTO = BeanUtil.toBean(requestParam, ShortLinkCreateReqDTO.class);
+            shortLinkCreateReqDTO.setOriginUrl(originUrls.get(i));
+            shortLinkCreateReqDTO.setDescribe(describes.get(i));
+            try {
+                ShortLinkCreateRespDTO shortLink = createShortLink(shortLinkCreateReqDTO);
+                ShortLinkBaseInfoRespDTO linkBaseInfoRespDTO = ShortLinkBaseInfoRespDTO.builder()
+                        .fullShortUrl(shortLink.getFullShortUrl())
+                        .originUrl(shortLink.getOriginUrl())
+                        .describe(describes.get(i))
+                        .build();
+                result.add(linkBaseInfoRespDTO);
+            } catch (Throwable ex) {
+                log.error("批量创建短链接失败，原始参数：{}", originUrls.get(i));
+            }
+        }
+        return ShortLinkBatchCreateRespDTO.builder()
+                .total(result.size())
+                .baseLinkInfos(result)
+                .build();
     }
 
     private String generateSuffix(ShortLinkCreateReqDTO requestParam) {
@@ -354,16 +389,16 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             JSONObject jsonObject = JSON.parseObject(localResultStr);
             String infocode = jsonObject.getString("infocode");
             LinkLocaleStatsDO linkLocaleStatsDO;
-            String actualProvince="";
-            String actualCity="";
+            String actualProvince = "";
+            String actualCity = "";
             if (StrUtil.isNotBlank(infocode) && StrUtil.equals(infocode, "10000")) {
                 String province = jsonObject.getString("province");
                 boolean unKnowFlag = StrUtil.isBlank(province);
                 linkLocaleStatsDO = LinkLocaleStatsDO.builder()
                         .fullShortUrl(fullShortUrl)
                         .gid(gid)
-                        .province(actualProvince=unKnowFlag ? "未知" : province)
-                        .city(actualCity=unKnowFlag ? "未知" : jsonObject.getString("city"))
+                        .province(actualProvince = unKnowFlag ? "未知" : province)
+                        .city(actualCity = unKnowFlag ? "未知" : jsonObject.getString("city"))
                         .adcode(unKnowFlag ? "未知" : jsonObject.getString("adcode"))
                         .cnt(1)
                         .country("中国")
@@ -418,7 +453,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .gid(gid)
                     .os(os)
                     .user(uv.get())
-                    .locale("中国"+actualProvince+actualCity)
+                    .locale("中国" + actualProvince + actualCity)
                     .device(device)
                     .network(network)
                     .build();
@@ -426,7 +461,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
             linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
 
-            baseMapper.incrementStats(gid, fullShortUrl, 1,  uvBoolean.get() ? 1 : 0, uipFirstFlag ? 1 : 0);
+            baseMapper.incrementStats(gid, fullShortUrl, 1, uvBoolean.get() ? 1 : 0, uipFirstFlag ? 1 : 0);
 
             LinkStatsTodayDO linkStatsTodayDO = LinkStatsTodayDO.builder()
                     .todayPv(1)

@@ -15,7 +15,7 @@ import com.yupc.myshortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 import com.yupc.myshortlink.admin.remote.dto.ShortLinkRemoteService;
 import com.yupc.myshortlink.admin.remote.dto.resp.ShortLinkCountQueryRespDTO;
 import com.yupc.myshortlink.admin.service.GroupService;
-import com.yupc.myshortlink.admin.utils.RandomNumberGenerator;
+import com.yupc.myshortlink.admin.toolkit.RandomNumberGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

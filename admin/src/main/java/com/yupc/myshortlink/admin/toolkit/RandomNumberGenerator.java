@@ -1,4 +1,4 @@
-package com.yupc.myshortlink.admin.utils;
+package com.yupc.myshortlink.admin.toolkit;
 
 import java.util.Random;
 
