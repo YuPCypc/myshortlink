@@ -440,7 +440,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             originUrl += System.currentTimeMillis();
             String shortUrl = HashUtil.hashToBase62(originUrl);
 
-            if (!shortUrlCreateCachePenetrationBloomFilter.contains(requestParam.getDomain() + "/" + shortUrl)) {
+            if (!shortUrlCreateCachePenetrationBloomFilter.contains(createShortLinkDefaultDomain)) {
                 return shortUrl;
             }
             customGenerateCount--;
