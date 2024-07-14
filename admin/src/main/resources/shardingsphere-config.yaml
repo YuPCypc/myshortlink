@@ -5,7 +5,7 @@ dataSources:
     driverClassName: com.mysql.cj.jdbc.Driver
     jdbcUrl: jdbc:mysql://127.0.0.1:3306/link?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai
     username: root
-    password: root
+    password: f8k7Lg0Z1yVrM4t9NpOi3Xc2Hw7Dq4B5d6Jv1Kl8BnR2Tg9SxV0YpZ5Cw8Uj7A3L
 
 rules:
   - !SHARDING

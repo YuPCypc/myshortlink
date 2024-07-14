@@ -23,7 +23,7 @@ public class RecycleBinController {
     /**
      * 回收站添加功能
      */
-    @PostMapping("/api/myshortlink/v1/recycle-bin")
+    @PostMapping("/api/short-link/v1/recycle-bin")
     public Result<Void> saveRecycleBin(@RequestBody RecycleBinSaveReqDTO requestParam){
         recycleBinService.saveRecycleBin(requestParam);
         return Results.success();
@@ -32,7 +32,7 @@ public class RecycleBinController {
     /**
      * 分页查询回收站功能
      */
-    @GetMapping("/api/myshortlink/v1/recycle-bin/page")
+    @GetMapping("/api/short-link/v1/recycle-bin/page")
     public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam){
         return Results.success(recycleBinService.pageShortLink(requestParam));
     }
@@ -40,7 +40,7 @@ public class RecycleBinController {
     /**
      * 回收站恢复功能
      */
-    @PostMapping("/api/myshortlink/v1/recycle-bin/recover")
+    @PostMapping("/api/short-link/v1/recycle-bin/recover")
     public Result<Void> recoverRecycleBin(@RequestBody RecycleBinRecoverReqDTO requestParam){
         recycleBinService.recoverRecycleBin(requestParam);
         return Results.success();
@@ -49,7 +49,7 @@ public class RecycleBinController {
     /**
      * 回收站删除
      */
-    @PostMapping("/api/myshortlink/v1/recycle-bin/remove")
+    @PostMapping("/api/short-link/v1/recycle-bin/remove")
     public Result<Void> removeRecycleBin(@RequestBody RecycleBinRemoveReqDTO requestParam){
         recycleBinService.removeRecycleBin(requestParam);
         return Results.success();

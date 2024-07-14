@@ -29,7 +29,7 @@ public class ShortLinkController {
     /**
      * 新建短链接
      */
-    @PostMapping("/api/myshortlink/admin/v1/create")
+    @PostMapping("/api/short-link/admin/v1/create")
     public Result<ShortLinkCreateRespDTO> createShortLink(@RequestBody ShortLinkCreateReqDTO requestParam){
         return shortLinkRemoteService.createShortLink(requestParam);
     }
@@ -37,7 +37,7 @@ public class ShortLinkController {
     /**
      * 短链接分页返回
      */
-    @GetMapping("/api/myshortlink/admin/v1/page")
+    @GetMapping("/api/short-link/admin/v1/page")
     public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam){
         return shortLinkRemoteService.pageShortLink(requestParam);
     }
@@ -45,7 +45,7 @@ public class ShortLinkController {
     /**
      * 更新短链接
      */
-    @PostMapping("/api/myshortlink/admin/v1/update")
+    @PostMapping("/api/short-link/admin/v1/update")
     public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam){
         shortLinkRemoteService.updateShortLink(requestParam);
         return Results.success();
@@ -55,7 +55,7 @@ public class ShortLinkController {
      * 批量创建短链接
      */
     @SneakyThrows
-    @PostMapping("/api/myshortlink/admin/v1/create/batch")
+    @PostMapping("/api/short-link/admin/v1/create/batch")
     public void batchCreateShortLink(@RequestBody ShortLinkBatchCreateReqDTO requestParam, HttpServletResponse response) {
         Result<ShortLinkBatchCreateRespDTO> shortLinkBatchCreateRespDTOResult = shortLinkRemoteService.batchCreateShortLink(requestParam);
         if (shortLinkBatchCreateRespDTOResult.isSuccess()) {

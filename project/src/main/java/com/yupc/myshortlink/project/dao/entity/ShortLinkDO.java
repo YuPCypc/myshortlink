@@ -30,7 +30,7 @@ public class ShortLinkDO extends BaseDO {
     /**
      * 短链接
      */
-    private String shortUrl;
+    private String shortUri;
 
     /**
      * 完整短链接
@@ -55,7 +55,7 @@ public class ShortLinkDO extends BaseDO {
     /**
      * 创建类型：0:接口创建n1:控制台创建
      */
-    private int createType;
+    private int createdType;
 
     /**
      * 有效期类型：0:永久有效n1:自定义有效
@@ -65,7 +65,7 @@ public class ShortLinkDO extends BaseDO {
     /**
      * 有效期
      */
-    private Date validTime;
+    private Date validDate;
 
     /**
      * 描述
@@ -100,4 +100,9 @@ public class ShortLinkDO extends BaseDO {
      */
     @TableField(exist = false)
     private Integer totalUip;
+
+    /**
+     * 删除时间
+     */
+    private Long delTime;
 }

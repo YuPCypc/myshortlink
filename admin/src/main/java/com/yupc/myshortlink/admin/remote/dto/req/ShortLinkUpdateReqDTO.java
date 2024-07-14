@@ -29,6 +29,11 @@ public class ShortLinkUpdateReqDTO {
     private String fullShortUrl;
 
     /**
+     * 原始分组标识
+     */
+    private String originGid;
+
+    /**
      * 有效期类型：0:永久有效n1:自定义有效
      */
     private int validDateType;
