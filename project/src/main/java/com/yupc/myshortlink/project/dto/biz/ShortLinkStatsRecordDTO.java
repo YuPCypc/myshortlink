@@ -70,4 +70,5 @@ public class ShortLinkStatsRecordDTO {
      * 当前时间
      */
     private Date currentDate;
+
 }

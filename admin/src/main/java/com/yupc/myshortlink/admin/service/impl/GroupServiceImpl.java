@@ -14,7 +14,7 @@ import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupDeleteReqDTO;
 import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.yupc.myshortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.yupc.myshortlink.admin.dto.resp.ShortLinkGroupRespDTO;
-import com.yupc.myshortlink.admin.remote.dto.ShortLinkRemoteService;
+import com.yupc.myshortlink.admin.remote.dto.ShortLinkActualRemoteService;
 import com.yupc.myshortlink.admin.remote.dto.resp.ShortLinkCountQueryRespDTO;
 import com.yupc.myshortlink.admin.service.GroupService;
 import com.yupc.myshortlink.admin.toolkit.RandomNumberGenerator;
@@ -36,16 +36,11 @@ import static com.yupc.myshortlink.admin.common.constant.RedisCacheConstant.LOCK
 @RequiredArgsConstructor
 public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implements GroupService {
 
+    private final ShortLinkActualRemoteService shortLinkActualRemoteService;
     private final RedissonClient redissonClient;
     @Value("${short-link.group.max-num}")
     private Integer groupMaxNum;
 
-    /**
-     * 后续spring-cloud Feign调用
-     */
-    ShortLinkRemoteService shortLinkRemoteService=new ShortLinkRemoteService(){
-
-    };
 
 
 
@@ -89,7 +84,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .eq(GroupDO::getUsername, UserContext.getUsername())
                 .orderByDesc(GroupDO::getSortOrder, GroupDO::getUpdateTime);
         List<GroupDO> groupDOS = baseMapper.selectList(queryWrapper);
-        Result<List<ShortLinkCountQueryRespDTO>> listResult = shortLinkRemoteService.countShortLink(groupDOS.stream().map(GroupDO::getGid).toList());
+        Result<List<ShortLinkCountQueryRespDTO>> listResult = shortLinkActualRemoteService.listGroupShortLinkCount(groupDOS.stream().map(GroupDO::getGid).toList());
         List<ShortLinkGroupRespDTO> shortLinkGroupRespDTOS = BeanUtil.copyToList(groupDOS, ShortLinkGroupRespDTO.class);
         shortLinkGroupRespDTOS.forEach(each -> {
             String gid = each.getGid();
