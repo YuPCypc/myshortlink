@@ -74,8 +74,13 @@ public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper,ShortLink
                 .eq(ShortLinkDO::getFullShortUrl, requestParam.getFullShortLink())
                 .eq(ShortLinkDO::getGid, requestParam.getGid())
                 .eq(ShortLinkDO::getDelFlag, 0)
+                .eq(ShortLinkDO::getDelTime,0L)
                 .eq(ShortLinkDO::getEnableStatus, 1);
-        baseMapper.delete(updateWrapper);
+        ShortLinkDO delShortLinkDO = ShortLinkDO.builder()
+                .delTime(System.currentTimeMillis())
+                .build();
+        delShortLinkDO.setDelFlag(1);
+        baseMapper.update(delShortLinkDO, updateWrapper);
     }
 
 }

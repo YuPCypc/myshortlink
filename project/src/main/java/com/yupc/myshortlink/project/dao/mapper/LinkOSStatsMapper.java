@@ -20,7 +20,7 @@ public interface LinkOSStatsMapper extends BaseMapper<LinkOSStatsDO> {
             "VALUES( #{linkOSStats.fullShortUrl}, #{linkOSStats.gid}, #{linkOSStats.date}, #{linkOSStats.cnt}," +
             "#{linkOSStats.os},NOW(), NOW(), 0) " +
             "ON DUPLICATE KEY UPDATE cnt = cnt +  #{linkOSStats.cnt};")
-    void ShortLinkOSStats(@Param("linkOSStats") LinkOSStatsDO linkOSStatsDO);
+    void shortLinkOSStats(@Param("linkOSStats") LinkOSStatsDO linkOSStatsDO);
 
     /**
      * 根据短链接获取指定日期内操作系统监控数据

@@ -24,7 +24,7 @@ public interface LinkLocaleStatsMapper extends BaseMapper<LinkLocaleStatsDO> {
             "VALUES( #{linkLocaleStats.fullShortUrl}, #{linkLocaleStats.gid}, #{linkLocaleStats.date}, #{linkLocaleStats.cnt}," +
             "#{linkLocaleStats.province},#{linkLocaleStats.city},#{linkLocaleStats.adcode},#{linkLocaleStats.country},NOW(), NOW(), 0) " +
             "ON DUPLICATE KEY UPDATE cnt = cnt +  #{linkLocaleStats.cnt};")
-    void ShortLinkLocaleStats(@Param("linkLocaleStats")LinkLocaleStatsDO linkLocaleStatsDO);
+    void shortLinkLocaleStats(@Param("linkLocaleStats")LinkLocaleStatsDO linkLocaleStatsDO);
 
     /**
      * 根据短链接获取指定日期内基础监控数据
